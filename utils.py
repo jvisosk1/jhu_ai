@@ -7,6 +7,7 @@ Y = 1
 STATE = 0
 COST = 1
 PARENT = 2
+HEURISTIC_PLUS_TOTAL_COST = 3
 
 COSTS = {'.': 1, '*': 3, '#': 5, '~': 7}
 MOVES = [(0,-1), (1,0), (0,1), (-1,0)]
