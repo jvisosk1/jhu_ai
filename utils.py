@@ -1,4 +1,5 @@
 from main import *
+import copy
 
 X = 0
 Y = 1
@@ -25,61 +26,55 @@ def get_successors(cur_state):
         else:  # if move in bounds, append (move_coordinate, move_cost) to successor list
             move_key = test_world[move[X]][move[Y]]
             move_cost = COSTS[move_key]
-            # print(f'cost of {move_key} = ', move_cost)
             successors.append((move, move_cost))
 
     # prioritize the successor list based on the cost of moves
     ranked_successors = sorted(successors, key=lambda x: x[1])
 
-    # return only the move coordinate component of ranked_successors list (w/o cost)
-    # return [x[0] for x in ranked_successors]
     return ranked_successors
 
 
-def extract_path(explored):
+def extract_path(explored, goal):
 
-    [print(i) for i in explored]
-
-    explored.reverse()
-    path = [explored[0][STATE]]
-    next_node = explored[0][PARENT]
-
-    for node in explored[1:]:
-        if node[STATE] == next_node:
-            # TODO: compare the costs of all nodes with parent state = node state
-            path.append(node[STATE])
-            next_node = node[PARENT]
+    node = goal
+    path = []
+    while node in explored:
+        path.append(node)
+        node = explored.get(node)[1]
 
     path.reverse()
     return path
 
 
-def pretty_print_solution(path):
+def pretty_print_solution(path, goal):
+
+    print_world = copy.deepcopy(test_world)
 
     for j in range(len(path)):
         cur_move = path[j]
         if j == len(path)-1:
-            next_move = GOAL
+            next_move = goal
         else: next_move = path[j+1]
 
         # if next move is downward
         if cur_move[X] < next_move[X]:
-            test_world[cur_move[X]][cur_move[Y]] = 'v'
+            print_world[cur_move[X]][cur_move[Y]] = 'v'
 
         # if next move is upward
         elif cur_move[X] > next_move[X]:
-            test_world[cur_move[X]][cur_move[Y]] = '^'
+            print_world[cur_move[X]][cur_move[Y]] = '^'
 
         # if next move is right
         elif cur_move[Y] < next_move[Y]:
-            test_world[cur_move[X]][cur_move[Y]] = '>'
+            print_world[cur_move[X]][cur_move[Y]] = '>'
 
         # if next move is left
-        else: test_world[cur_move[X]][cur_move[Y]] = '<'
+        else: print_world[cur_move[X]][cur_move[Y]] = '<'
 
-    test_world[GOAL[X]][GOAL[Y]] = 'G'
+    print_world[goal[X]][goal[Y]] = 'G'
 
-    for i in test_world:
+    for i in print_world:
         line = "".join(i)
         print(line.replace('.', '*').replace('~', '*').replace('#', '*'))
 
+    print('\n')
