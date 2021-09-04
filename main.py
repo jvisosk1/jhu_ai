@@ -14,38 +14,41 @@ test_world = [
 ]
 
 
-def heuristic_cost(cur_state, goal_state):
+def heuristic(cur_state, goal_state):
     h_value = abs(cur_state[X] - goal_state[X]) + abs(cur_state[Y] - goal_state[Y])
-    print(f'h() of {cur_state} and goal {goal_state} = {h_value}')
-    return abs(cur_state[X] - goal_state[X]) + abs(cur_state[Y] - goal_state[Y])
+    return h_value
 
 
 def a_star_search(start, goal, costs, moves):
-    frontier = [(start, 1, None)]
+    frontier = [(start, 1, None, heuristic(start, goal))]
     explored = {}
 
     while len(frontier) > 0:
-        current_state = frontier[0]
-        current_cost = current_state[COST]
+        cur = frontier[0]
 
-        children = get_successors(current_state[STATE])
+        children = get_successors(cur[STATE])
+
+        # for each successor/child attach to node: cost from start, current state, and heuristic cost + cost from start
         children = [
-            # (child[STATE], child[COST] + current_cost + heuristic_cost(child[STATE], goal), current_state[STATE])
-            (child[STATE], child[COST] + current_cost, current_state[STATE])
+            (child[STATE], child[COST] + cur[COST], cur[STATE], child[COST] + cur[COST] + heuristic(child[STATE], goal))
             for child in children
         ]
 
-        if current_state[STATE] == goal:
-            explored[current_state[STATE]] = [current_state[COST], current_state[PARENT]]
+        if cur[STATE] == goal:
+            explored[cur[STATE]] = [cur[COST], cur[PARENT]]
             return explored
+
+        frontier.remove(cur)
 
         # add children to frontier if not on explored or frontier lists
         [frontier.append(child) for child in children if (child[STATE] not in explored and child not in frontier)]
-        frontier = sorted(frontier, key=lambda x: x[1])
-        frontier.remove(current_state)
 
-        if (current_state[STATE] not in explored) or (current_state[COST] < explored.get(current_state[STATE])[0]):
-            explored[current_state[STATE]] = [current_state[COST], current_state[PARENT]]
+        # sort the frontier list by f(n) where f(n) = g(n) + h(n)
+        frontier = sorted(frontier, key=lambda x: x[HEURISTIC_PLUS_TOTAL_COST])
+
+        # add current state to explored, or if dict key (current state) already exists replace if current cost is less
+        if (cur[STATE] not in explored) or (cur[COST] < explored.get(cur[STATE])[0]):
+            explored[cur[STATE]] = [cur[COST], cur[PARENT]]
 
     return None
 
